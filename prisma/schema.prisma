@@ -1,0 +1,202 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  ADVISOR
+  MANAGER
+  ADMIN
+}
+
+enum SessionChannel {
+  BROWSER
+  TWILIO
+}
+
+enum SessionStatus {
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ScenarioType {
+  INBOUND
+  OUTBOUND
+}
+
+enum Speaker {
+  ADVISOR
+  AI_CUSTOMER
+  SYSTEM
+}
+
+model User {
+  id             String   @id @default(cuid())
+  name           String
+  email          String   @unique
+  role           UserRole @default(ADVISOR)
+  weeklyCallGoal Int      @default(0)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  trainingSessions TrainingSession[]
+}
+
+model Persona {
+  id              String   @id @default(cuid())
+  name            String   @unique
+  description     String
+  openingLine     String
+  behavioralRules String
+  primarySkills   String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  scenarios        Scenario[]
+  trainingSessions TrainingSession[]
+}
+
+model Scenario {
+  id          String       @id @default(cuid())
+  title       String
+  type        ScenarioType @default(INBOUND)
+  personaId   String
+  vehicle     String?
+  concern     String?
+  difficulty  String?
+  promptNotes String?
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  persona          Persona           @relation(fields: [personaId], references: [id])
+  trainingSessions TrainingSession[]
+}
+
+model TrainingSession {
+  id         String         @id @default(cuid())
+  userId     String
+  personaId  String
+  scenarioId String
+  channel    SessionChannel @default(BROWSER)
+  status     SessionStatus  @default(IN_PROGRESS)
+  startedAt  DateTime       @default(now())
+  endedAt    DateTime?
+  transcript String?
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  user              User               @relation(fields: [userId], references: [id])
+  persona           Persona            @relation(fields: [personaId], references: [id])
+  scenario          Scenario           @relation(fields: [scenarioId], references: [id])
+  conversationTurns ConversationTurn[]
+  scorecardResult   ScorecardResult?
+
+  @@index([userId])
+  @@index([personaId])
+  @@index([scenarioId])
+  @@index([status])
+}
+
+model ConversationTurn {
+  id        String   @id @default(cuid())
+  sessionId String
+  speaker   Speaker
+  text      String
+  sequence  Int
+  createdAt DateTime @default(now())
+
+  session TrainingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, sequence])
+  @@index([sessionId])
+}
+
+model ScorecardTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  criteria ScorecardCriterion[]
+  results  ScorecardResult[]
+}
+
+model ScorecardCriterion {
+  id          String   @id @default(cuid())
+  templateId  String
+  name        String
+  description String
+  maxScore    Int      @default(5)
+  weight      Int      @default(1)
+  sortOrder   Int
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  template ScorecardTemplate          @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  results  ScorecardCriterionResult[]
+
+  @@unique([templateId, sortOrder])
+  @@index([templateId])
+}
+
+model ScorecardResult {
+  id            String   @id @default(cuid())
+  sessionId     String   @unique
+  templateId    String
+  totalScore    Int
+  maxScore      Int
+  summary       String?
+  actionPlan    String?
+  rawAiResponse Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  session          TrainingSession            @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  template         ScorecardTemplate          @relation(fields: [templateId], references: [id])
+  criterionResults ScorecardCriterionResult[]
+
+  @@index([templateId])
+}
+
+model ScorecardCriterionResult {
+  id                      String   @id @default(cuid())
+  resultId                String
+  criterionId             String
+  score                   Int
+  feedback                String
+  evidence                String?
+  criterionNameSnapshot   String?
+  criterionMaxSnapshot    Int?
+  criterionWeightSnapshot Int?
+  criterionOrderSnapshot  Int?
+  createdAt               DateTime @default(now())
+
+  result    ScorecardResult    @relation(fields: [resultId], references: [id], onDelete: Cascade)
+  criterion ScorecardCriterion @relation(fields: [criterionId], references: [id])
+
+  @@unique([resultId, criterionId])
+  @@index([resultId])
+  @@index([criterionId])
+}
+
+model AppBranding {
+  id                  String   @id @default("default")
+  shopName            String   @default("JB Import Auto")
+  logoUrl             String   @default("/jb-logo.png")
+  primaryColor        String   @default("#002f6b")
+  secondaryColor      String   @default("#5c7bb1")
+  accentColor         String   @default("#3b3a39")
+  weeklyReportEnabled Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}

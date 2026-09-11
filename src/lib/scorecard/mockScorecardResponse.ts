@@ -1,0 +1,65 @@
+// Temporary mock response used for testing scorecard flow before OpenAI integration
+
+import type { ScorecardServiceResponse } from "@/types/training";
+
+export const mockScorecardResponse: ScorecardServiceResponse = {
+    schemaVersion: "1.0",
+    sessionId: "cmrlroevo0000gssmdzz2mqz7",
+    scorecardTemplateId: "cmrgdvonr000eqsfzxytunnni",
+    totalScore: 20,
+    maxScore: 25,
+    summary: "The advisor demonstrated strong communication skills but could improve appointment closing.",
+    actionPlan: "Practice asking for the appointment directly and offering scheduling options.",
+    criteria: [
+        {
+            criterionId: "cmrgdvop4000fqsfze5qepabk",
+            name: "Investigative Questions",
+            score: 5,
+            maxScore: 5,
+            weight: 1,
+            sortOrder: 0,
+            feedback: "The advisor asked relevant questions about the customer's concern.",
+            evidence: "The advisor asked what kind of noise the customer was hearing and when it happened.",
+        },
+        {
+            criterionId: "cmrgdvoqn000gqsfzbocss3ij",
+            name: "Helpful Tonality",
+            score: 4,
+            maxScore: 5,
+            weight: 1,
+            sortOrder: 1,
+            feedback: "The advisor was helpful but could have provided more reassurance.",
+            evidence: "The advisor asked follow-up qiestions about the vehicle issue.",
+        },
+        {
+            criterionId: "cmrgdvors000hqsfzb9odh430",
+            name: "Building Value",
+            score: 3,
+            maxScore: 5,
+            weight: 1,
+            sortOrder: 2,
+            feedback: "The advisor could better explain the value of the inspection.",
+            evidence: "No clear explanation of shop value was provided.",
+        },
+        {
+            criterionId: "cmrgdvot0000iqsfzepf5j264",
+            name: "Asking for Customer Name",
+            score: 5,
+            maxScore: 5,
+            weight: 1,
+            sortOrder: 3,
+            feedback: "Advisor successfully asked for the customer's name.",
+            evidence: "Advisor asked who they were speaking with.",
+        },
+        {
+            criterionId: "cmrgdvoub000jqsfz14vgde2j",
+            name: "Appointment Ask",
+            score: 2,
+            maxScore: 5,
+            weight: 1,
+            sortOrder: 4,
+            feedback: "Advisor did not attempt to schedule an appointment.",
+            evidence: "No appointment ask appeared in the transcript.",
+        },
+    ],
+};
